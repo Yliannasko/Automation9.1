@@ -6,46 +6,39 @@ import lombok.val;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 public class DataGenerator {
-    private DataGenerator() {
-    }
+    static Faker faker = new Faker(new Locale(("ru")));
 
-    public static String generateDate(int shift) {
-        // TODO: добавить логику для объявления переменной date и задания её значения, для генерации строки с датой
-        // Вы можете использовать класс LocalDate и его методы для получения и форматирования даты
+    public String generateDate(int shift) {
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate deliveryDate = currentDate.plusDays(shift);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        String date = deliveryDate.format(formatter);
         return date;
     }
 
-    public static String generateCity(String locale) {
-        // TODO: добавить логику для объявления переменной city и задания её значения, генерацию можно выполнить
-        // с помощью Faker, либо используя массив валидных городов и класс Random
-        return city;
+    public static String generateName() {
+
+        return faker.name().fullName();
     }
 
-    public static String generateName(String locale) {
-        // TODO: добавить логику для объявления переменной name и задания её значения, для генерации можно
-        // использовать Faker
-        return name;
+    public static String generatePhone() {
+
+        return faker.phone("+##########");
     }
 
-    public static String generatePhone(String locale) {
-        // TODO: добавить логику для объявления переменной phone и задания её значения, для генерации можно
-        // использовать Faker
-        return phone;
-    }
+    public static final List<String> cities = Arrays.asList(
+            "Москва", "Калуга", "Казань", "Хабаровск", "Якутск", "Красноярск", "Иваново"
+    );
 
-    public static class Registration {
-        private Registration() {
-        }
-
-        public static UserInfo generateUser(String locale) {
-            // TODO: добавить логику для создания пользователя user с использованием методов generateCity(locale),
-            // generateName(locale), generatePhone(locale)
-            return user;
-        }
+    public static String generateCity() {
+        return cities.get(faker.random().nextInt(cities.size())));
     }
 
     @Value
