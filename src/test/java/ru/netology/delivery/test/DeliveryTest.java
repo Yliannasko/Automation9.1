@@ -1,45 +1,60 @@
 package ru.netology.delivery.test;
 
+import com.codeborne.selenide.Condition;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 import ru.netology.delivery.data.DataGenerator;
 
+import java.beans.PropertyEditor;
+import java.time.Duration;
 import java.util.Locale;
 
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.SetValueOptions.withText;
+import static com.codeborne.selenide.files.DownloadActions.click;
 
 class DeliveryTest {
-
     @BeforeEach
     void setup() {
         open("http://localhost:9999");
     }
 
-    @BeforeEach
-    void setUpAll() {
-        faker = new Faker(new Locale("ru"));
-    }
-
     @Test
     @DisplayName("Should successful plan and replan meeting")
     void shouldSuccessfulPlanAndReplanMeeting() {
-        var validUser = DataGenerator.Registration.generateUser("ru");
-        var daysToAddForFirstMeeting = 4;
-        var firstMeetingDate = DataGenerator.generateDate(daysToAddForFirstMeeting);
-        var daysToAddForSecondMeeting = 7;
-        var secondMeetingDate = DataGenerator.generateDate(daysToAddForSecondMeeting);
-        // TODO: добавить логику теста в рамках которого будет выполнено планирование и перепланирование встречи.
-        // Для заполнения полей формы можно использовать пользователя validUser и строки с датами в переменных
-        // firstMeetingDate и secondMeetingDate. Можно также вызывать методы generateCity(locale),
-        // generateName(locale), generatePhone(locale) для генерации и получения в тесте соответственно города,
-        // имени и номера телефона без создания пользователя в методе generateUser(String locale) в датагенераторе
-    }
-
-    @Test
-    void shouldTest() {
-        String city = faker.city();
-        System.out.println(city);
+        int daysToAddForFirstMeeting = 4;
+        String firstMeetingDate = DataGenerator.generateDate(daysToAddForFirstMeeting);
+        int daysToAddForSecondMeeting = 7;
+        String secondMeetingDate = DataGenerator.generateDate(daysToAddForSecondMeeting);
+        $("[data-test-id=city] input").setValue(DataGenerator.generateCity());
+        $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[data-test-id=date] input").setValue(DataGenerator.generateDate(4));
+        $("[data-test-id=name] input").setValue(DataGenerator.generateName());
+        $("[data-test-id=phone] input").setValue(DataGenerator.generatePhone());
+        $("[data-test-id=agreement]").click();
+        $(".button__text").click();
+        $("[data-test-id=success-notification] .notification__title")
+                .shouldHave(exactText("Успешно!")).shouldBe(visible, Duration.ofSeconds(15));
+        $("[data-test-id=success-notification] .notification__content")
+                .shouldHave(exactText("Встреча успешно запланирована на " + firstMeetingDate))
+                .shouldBe(visible);
+        $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[data-test-id=date] input").setValue(secondMeetingDate);
+        $(".button__text").click();
+        $("[data-test-id='replan-notification'] .notification__content")
+                .shouldHave(text("У вас уже запланирована встреча на другую дату. Перепланировать?"))
+                .shouldBe(visible);
+        $("[data-test-id='replan-notification'] .button__text").click();
+        $("[data-test-id='success-notification'] .notification__content")
+                .shouldHave(exactText("Встреча успешно запланирована на " + secondMeetingDate))
+                .shouldBe(visible);
     }
 }
+
+
+
